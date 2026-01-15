@@ -126,7 +126,7 @@ fetch(EXCEL_FILE_URL)
   .catch(error => {
     console.error('Error loading Excel file:', error);
   });(e.target.files[0]);
-});
+);
 
 document.getElementById('searchInput').addEventListener('input', function(e) {
   const query = e.target.value.toLowerCase();

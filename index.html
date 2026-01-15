@@ -102,43 +102,45 @@
 
 <script>
 // --------------------------------------------------
-// This array holds ALL book data after loading
-// We filter/search from this instead of reloading the file
+// DATA STORAGE
+// Holds all book data after loading from Excel
 // --------------------------------------------------
 let allRows = [];
 
 // --------------------------------------------------
-// STEP 1: LOAD EXCEL FILE FROM A FIXED LOCATION
-// This assumes the Excel file is hosted at a known URL
-// and is accessible from this webpage (same server or CORS enabled)
+// STEP 1: LOAD EXCEL FILE FROM GITHUB PAGES
+// The Excel file must live next to index.html
 // --------------------------------------------------
-
-const EXCEL_FILE_URL = './books.xlsx'; // change path if needed
+const EXCEL_FILE_URL = './books.xlsx';
 
 fetch(EXCEL_FILE_URL)
-  .then(response => response.arrayBuffer()) // read file as binary data
+  .then(response => response.arrayBuffer()) // Read file as binary data
   .then(data => {
     const workbook = XLSX.read(data, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     allRows = XLSX.utils.sheet_to_json(sheet);
-    renderShelf(allRows);
+    renderShelf(allRows); // Render bookshelf after data loads
   })
   .catch(error => {
     console.error('Error loading Excel file:', error);
-  });(e.target.files[0]);
+  });
 
-
-document.getElementById('searchInput').addEventListener('input', function(e) {
+// --------------------------------------------------
+// STEP 2: SEARCH FILTER
+// Filters books already loaded in memory
+// --------------------------------------------------
+document.getElementById('searchInput').addEventListener('input', function (e) {
   const query = e.target.value.toLowerCase();
   const filtered = allRows.filter(row =>
-    Object.values(row).some(val => String(val).toLowerCase().includes(query))
+    Object.values(row).some(val =>
+      String(val).toLowerCase().includes(query)
+    )
   );
   renderShelf(filtered);
 });
 
 // --------------------------------------------------
-// STEP 2: RENDER BOOKS ON THE VISUAL BOOKSHELF
-// Takes an array of book objects and creates UI cards
+// STEP 3: RENDER BOOKS ON THE VISUAL BOOKSHELF
 // --------------------------------------------------
 function renderShelf(rows) {
   const shelf = document.getElementById('bookshelf');
@@ -147,7 +149,14 @@ function renderShelf(rows) {
   rows.forEach(row => {
     const status = String(row.Status || '').toLowerCase();
     const book = document.createElement('div');
-    book.className = 'book ' + (status.includes('available') ? 'available' : status.includes('borrowed') ? 'borrowed' : '');
+
+    book.className =
+      'book ' +
+      (status.includes('available')
+        ? 'available'
+        : status.includes('borrowed')
+        ? 'borrowed'
+        : '');
 
     book.innerHTML = `
       <div class="book-title">${row.Title || 'Untitled'}</div>
@@ -159,6 +168,9 @@ function renderShelf(rows) {
   });
 }
 
+// --------------------------------------------------
+// STEP 4: MODAL OPEN / CLOSE
+// --------------------------------------------------
 function openModal(row) {
   document.getElementById('modalTitle').innerText = row.Title || '';
   document.getElementById('modalAuthor').innerText = row.Author || '';
